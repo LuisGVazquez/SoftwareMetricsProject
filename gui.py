@@ -167,7 +167,7 @@ def calculate_all_metrics():
     filepath = filedialog.askopenfilename(title="Select Python File")
     if filepath:
         # Calculate code size
-        ncloc, cloc, analysis = count_lines_of_code(filepath)
+        ncloc, cloc, analysis_code_size = count_lines_of_code(filepath)
         total_loc = ncloc + cloc
         result_text = f"Effective Lines of Code (NCLOC): {ncloc}\nComment Lines (CLOC): {cloc}\nTotal Size (LOC): {total_loc}\n"
         if total_loc != 0:
@@ -195,17 +195,13 @@ def calculate_all_metrics():
 
         # Set the analysis function
         global analysis_func
-        analysis_func = lambda: f"{analysis}\n{analysis_cyclomatic}\n{analysis_reusability}\n{analysis_halstead}"
-
+        analysis_func = lambda: f"{analysis_code_size}\n{analysis_cyclomatic}\n{analysis_reusability}\n{analysis_halstead}"
 
 root = tk.Tk()
 root.title("Metrics Tool")
 
 # Apply TTKBootstrap style
 style = Style(theme='vapor')
-
-# Configure font settings
-#style.configure('.', font=('Roboto', 12)) 
 
 root.iconbitmap('Metrics.ico')
 
@@ -323,38 +319,6 @@ combined_text.pack(pady=10)
 # Add the navigation bar to the main window
 navbar.pack(expand=1, fill="both")
 
-# Frame for Theme Selection
-theme_frame = ttk.Frame(root)
-theme_frame.pack(side="bottom", padx=10, pady=10, anchor="sw")
-
-# Theme label
-theme_label = ttk.Label(theme_frame, text="Select Theme:")
-theme_label.grid(row=0, column=0, padx=5)
-
-# Theme dropdown
-available_themes = style.theme_names()
-theme_var = tk.StringVar(value=available_themes[0])
-theme_dropdown = ttk.Combobox(theme_frame, textvariable=theme_var, values=available_themes, state="readonly", width=20)
-theme_dropdown.grid(row=0, column=1, padx=5)
-
-
-# Change theme function
-def change_theme():
-    selected_theme = theme_var.get()
-    style.theme_use(selected_theme)
-    root.update()
-
-# Apply theme change on dropdown selection
-theme_dropdown.bind('<<ComboboxSelected>>', lambda event: change_theme())
-
-# Frame for Result
-result_frame = ttk.Frame(root)
-result_frame.pack(pady=10)
-
-# Result label
-result_label = ttk.Label(result_frame, text="", font=('Roboto', 14))
-result_label.pack()
-
 # Frame for Buttons
 button_frame = ttk.Frame(root)
 button_frame.pack(pady=10)
@@ -368,5 +332,36 @@ analyze_button.grid(row=0, column=1, padx=5)
 
 exit_button = ttk.Button(button_frame, text="Exit", command=root.quit)
 exit_button.grid(row=0, column=2, padx=5)
+
+# Frame for Theme Selection
+theme_frame = ttk.Frame(root)
+theme_frame.pack(side="left", padx=10, pady=10)
+
+# Theme label
+theme_label = ttk.Label(theme_frame, text="Select Theme:")
+theme_label.grid(row=0, column=0, padx=5)
+
+# Theme dropdown
+available_themes = style.theme_names()
+theme_var = tk.StringVar(value=available_themes[0])
+theme_dropdown = ttk.Combobox(theme_frame, textvariable=theme_var, values=available_themes, state="readonly", width=20)
+theme_dropdown.grid(row=0, column=1, padx=5)
+
+# Change theme function
+def change_theme():
+    selected_theme = theme_var.get()
+    style.theme_use(selected_theme)
+    root.update()
+
+# Apply theme change on dropdown selection
+theme_dropdown.bind('<<ComboboxSelected>>', lambda event: change_theme())
+
+# Frame for Result
+result_frame = ttk.Frame(root)
+result_frame.pack(side="bottom", padx=10, pady=10)
+
+# Result label
+result_label = ttk.Label(result_frame, text="", font=('Roboto', 13))
+result_label.pack()
 
 root.mainloop()
