@@ -1,40 +1,44 @@
+import ast
 import math
 
 def calculate_halstead_measure(code):
-    operators = {'+', '-', '*', '/', '**', '//', '%', '<<', '>>', '&', '|', '^', '~', '<', '>', '<=', '>=', '==', '!=', '<>', 'in', 'not in', 'is', 'is not', 'and', 'or', 'not', '=', '+=', '-=', '*=', '/=', '//=', '%=', '**=', '&=', '|=', '^=', '>>=', '<<=', '**=', '//=', '|=', '&='}
-    operands = set()
-    total_operators = 0
-    total_operands = 0
+    operator_counts = {}
+    operand_counts = {}
+    
+    # Parse the code
+    tree = ast.parse(code)
 
-    # Count unique operators and operands
-    for line in code.split('\n'):
-        line = line.strip()
-        if line.startswith('#'):
-            continue  # skip comments
-        if line:
-            for word in line.split():
-                if word in operators:
-                    total_operators += 1
-                elif word not in {'def', 'if', 'else', 'elif', 'for', 'while', 'try', 'except', 'finally', 'return', 'break', 'continue', 'pass', 'raise', 'import', 'from', 'as', 'class', 'global', 'nonlocal', 'lambda', 'del'}:
-                    operands.add(word)
-                    total_operands += 1
+    # Traverse the abstract syntax tree to count operators and operands
+    for node in ast.walk(tree):
+        if isinstance(node, ast.BinOp):
+            operator = type(node.op).__name__
+            operator_counts[operator] = operator_counts.get(operator, 0) + 1
+        elif isinstance(node, ast.Name):
+            operand = node.id
+            operand_counts[operand] = operand_counts.get(operand, 0) + 1
+        elif isinstance(node, ast.Constant):
+            operand = node.value
+            operand_counts[operand] = operand_counts.get(operand, 0) + 1
 
     # Calculate Halstead measures
-    unique_operators = len(operators)
-    unique_operands = len(operands)
+    total_operators = sum(operator_counts.values())
+    total_operands = sum(operand_counts.values())
+    unique_operators = len(operator_counts)
+    unique_operands = len(operand_counts)
     program_length = total_operators + total_operands
     vocabulary_size = unique_operators + unique_operands
     volume = program_length * math.log2(vocabulary_size)
 
-    return volume
+    return volume, operator_counts, operand_counts
 
 def calculate_halstead_measure_from_file(file_path):
     with open(file_path, 'r') as file:
         code = file.read()
 
-    halstead_measure = calculate_halstead_measure(code)
+    halstead_measure, operator_counts, operand_counts = calculate_halstead_measure(code)
     analysis = analyze_halstead_measure(halstead_measure)
-    return halstead_measure, analysis
+    return halstead_measure, operator_counts, operand_counts, analysis
+
 
 def analyze_halstead_measure(halstead_measure):
     """
@@ -57,9 +61,8 @@ def analyze_halstead_measure(halstead_measure):
 # Example usage:
 if __name__ == "__main__":
     file_path = input("Enter the path to the Python file: ")
-    halstead_measure = calculate_halstead_measure_from_file(file_path)
+    halstead_measure, operator_counts, operand_counts, analysis = calculate_halstead_measure_from_file(file_path)
     print("Halstead Measure:", halstead_measure)
-    
-    # Perform analysis
-    analysis = analyze_halstead_measure(halstead_measure)
+    print("Operator Counts:", operator_counts)
+    print("Operand Counts:", operand_counts)
     print("Analysis:", analysis)
