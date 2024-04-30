@@ -24,8 +24,7 @@ def show_code_size():
     global analysis_func
     filepath = filedialog.askopenfilename(title="Select Python File")
     if filepath:
-        ncloc, cloc, analysis = count_lines_of_code(filepath)
-        total_loc = ncloc + cloc
+        ncloc, cloc, total_loc, analysis = count_lines_of_code(filepath)
         result_text = f"Effective Lines of Code (NCLOC): {ncloc}\nComment Lines (CLOC): {cloc}\nTotal Size (LOC): {total_loc}\n"
         if total_loc != 0:
             comment_density = cloc / total_loc
@@ -102,14 +101,16 @@ def show_halstead_measure():
     global analysis_func
     filepath = filedialog.askopenfilename(title="Select Python File")
     if filepath:
-        halstead_measure, analysis = calculate_halstead_measure_from_file(filepath)
-        result_label.config(text=f"Halstead Measure: {halstead_measure}")
-        
-        # Display code in the text widget
-        display_python_code(filepath, halstead_text)
-
-        # Set the analysis function
-        analysis_func = lambda: analysis
+        halstead_measure_data = calculate_halstead_measure_from_file(filepath)
+        if len(halstead_measure_data) == 4:
+            halstead_measure, operator_counts, operand_counts, analysis = halstead_measure_data
+            result_label.config(text=f"Halstead Measure: {halstead_measure}")
+            # Display code in the text widget
+            display_python_code(filepath, halstead_text)
+            # Set the analysis function
+            analysis_func = lambda: analysis
+        else:
+            messagebox.showerror("Error", "Failed to calculate Halstead Measure.")
 
 def clear_result():
     global analysis_func
@@ -167,8 +168,7 @@ def calculate_all_metrics():
     filepath = filedialog.askopenfilename(title="Select Python File")
     if filepath:
         # Calculate code size
-        ncloc, cloc, analysis_code_size = count_lines_of_code(filepath)
-        total_loc = ncloc + cloc
+        ncloc, cloc, total_loc, analysis_code_size = count_lines_of_code(filepath)
         result_text = f"Effective Lines of Code (NCLOC): {ncloc}\nComment Lines (CLOC): {cloc}\nTotal Size (LOC): {total_loc}\n"
         if total_loc != 0:
             comment_density = cloc / total_loc
@@ -185,7 +185,7 @@ def calculate_all_metrics():
         result_text += f"Internal Reusability (rG): {reusability}\n"
 
         # Calculate Halstead Measure
-        halstead_measure, analysis_halstead = calculate_halstead_measure_from_file(filepath)
+        halstead_measure, operator_counts, operand_counts, analysis_halstead = calculate_halstead_measure_from_file(filepath)
         result_text += f"Halstead Measure: {halstead_measure}\n"
 
         result_label.config(text=result_text)
@@ -197,13 +197,14 @@ def calculate_all_metrics():
         global analysis_func
         analysis_func = lambda: f"{analysis_code_size}\n{analysis_cyclomatic}\n{analysis_reusability}\n{analysis_halstead}"
 
+
 root = tk.Tk()
 root.title("Metrics Tool")
 
 # Apply TTKBootstrap style
-style = Style(theme='vapor')
+style = Style(theme='flatly')
 
-root.iconbitmap('Metrics.ico')
+#root.iconbitmap('Metrics.ico')
 
 # Create a notebook-style navigation bar
 navbar = ttk.Notebook(root)
@@ -343,6 +344,7 @@ theme_label.grid(row=0, column=0, padx=5)
 
 # Theme dropdown
 available_themes = style.theme_names()
+available_themes.remove("cosmo")
 theme_var = tk.StringVar(value=available_themes[0])
 theme_dropdown = ttk.Combobox(theme_frame, textvariable=theme_var, values=available_themes, state="readonly", width=20)
 theme_dropdown.grid(row=0, column=1, padx=5)
