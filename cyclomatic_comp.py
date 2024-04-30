@@ -51,7 +51,7 @@ def calculate_cyclomatic_complexity_ast(filepath):
         elif complexity < 10:
             analysis = "The cyclomatic complexity is low, suggesting relatively simple code.\n\nThis indicates that the codebase is manageable and not overly complex.\n\nTo improve: Consider refactoring to break down complex functions into smaller, more manageable ones.\n\n\n"
         elif complexity < 15:
-            analysis = "The cyclomatic complexity is moderate, indicating moderately complex code.\n\nThis suggests that the codebase is becoming more intricate and may require additional attention.\n\nTo improve: Refactor complex functions to improve readability and maintainability\n\n\n."
+            analysis = "The cyclomatic complexity is moderate, indicating moderately complex code.\n\nThis suggests that the codebase is becoming more intricate and may require additional attention.\n\nTo improve: Refactor complex functions to improve readability and maintainability.\n\n\n"
         elif complexity < 20:
             analysis = "The cyclomatic complexity is high, suggesting complex code that may be hard to understand and maintain.\n\nThis indicates that the codebase is quite complex and may benefit from restructuring.\n\nTo improve: Refactor the code to reduce complexity. Break down functions and optimize control flow.\n\n\n"
         else:
